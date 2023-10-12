@@ -1,0 +1,86 @@
+fileName: BaseUIChart.vue
+path: {{nameCamelCase}}/frontend/src/components/base-ui
+---
+<template>
+    <div></div>
+</template>
+
+<script>
+    const BaseRepository = require('../../repository/BaseRepository');
+    const axios = require('axios').default;
+
+    export default{
+        name: 'BaseUIChart',
+        data: () => ({
+            repository: null,
+            value: [],
+            options: {
+                chart: {
+                    id: "barChart-bar"
+                },
+                xaxis: {
+                    categories: []
+                },
+                labels: [],
+            },
+            series: [],
+        }),
+        created() {
+        },
+        methods: {
+            async getValue(path) {
+                this.repository = new BaseRepository(axios, path);
+                this.value = await this.repository.find();
+            },
+            setValue(chartType, xaxis, data) {
+                if (chartType === "pie") {
+                    if(this.value && this.value.length > 0) {
+                        this.value.forEach((item) => {
+                            if (item) {
+                                if (xaxis && xaxis.length > 0) {
+                                    xaxis.forEach((val) => {
+                                        if (item[val]) {
+                                            this.options.labels.push(item[val]);
+                                        }
+                                    })
+                                }
+                                if (data && data.length > 0) {
+                                    data.forEach((val) => {
+                                        if (item[val]) {
+                                            this.series.push(item[this.data]);
+                                        }
+                                    })
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    this.series = [{
+                        data: []
+                    }];
+
+                    if(this.value && this.value.length > 0) {
+                        this.value.forEach((item) => {
+                            if (item) {
+                                if (xaxis && xaxis.length > 0) {
+                                    xaxis.forEach((val) => {
+                                        if (item[val]) {
+                                            this.options.xaxis.categories.push(item[val]);
+                                        }
+                                    })
+                                }
+                                if (data && data.length > 0) {
+                                    data.forEach((val) => {
+                                        if (item[val]) {
+                                            this.series[0].data.push(item[data]);
+                                        }
+                                    })
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        },
+    }
+</script>

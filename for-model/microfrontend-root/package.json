@@ -1,0 +1,30 @@
+forEach: Model
+fileName: package.json
+path: microfrontend-root
+---
+{
+  "name": "my-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "webpack-dev-server --port 8080 --env.isLocal=true",
+    "lint": "eslint src",
+    "build": "webpack --mode=production"
+  },
+  "dependencies": {
+    "single-spa": "^5.3.4",
+    "single-spa-layout": "^2.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "babel-eslint": "^10.1.0",
+    "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "eslint": "^6.7.2",
+    "html-webpack-plugin": "^4.2.0",
+    "serve": "^11.3.0",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3"
+  }
+}

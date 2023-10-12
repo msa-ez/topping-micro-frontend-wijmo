@@ -1,0 +1,27 @@
+fileName: BaseUIGrid.vue
+path: {{nameCamelCase}}/frontend/src/components/base-ui
+---
+<template>
+    <div></div>
+</template>
+
+<script>
+    const BaseRepository = require('../../repository/BaseRepository');
+    const axios = require('axios').default;
+
+    export default{
+        name: 'BaseUIGrid',
+        data: () => ({
+            repository: null,
+            value: [],
+        }),
+        created() {
+        },
+        methods: {
+            async getValue(path) {
+                this.repository = new BaseRepository(axios, path);
+                this.value = await this.repository.find();
+            },
+        },
+    }
+</script>

@@ -1,0 +1,113 @@
+forEach: ValueObject
+fileName: {{namePascalCase}}DetailGrid.vue
+path: {{boundedContext.nameCamelCase}}/frontend/src/components/ui
+---
+<template>
+    <div>
+        <div class="label-title">\{{label}}</div>
+        <v-btn v-if="editMode" @click="append()">추가</v-btn>
+        <v-btn v-if="editMode" @click="detailDeleteRow()">삭제</v-btn>
+        <wj-flex-grid
+            ref="flexGridDetails"
+            :key="value.length"
+            :autoGenerateColumns="false"
+            :allowAddNew="false"
+            :allowDelete="true"
+            :allowPinning="'SingleColumn'"
+            :newRowAtTop="false"
+            :showMarquee="true"
+            :selectionMode="'MultiRange'"
+            :validateEdits="false"
+            :itemsSource="value"
+            :initialized="flexDetailsInitialized"
+            style="margin-top:10px; max-height:65vh;"
+        >
+            <wj-flex-grid-cell-template cellType="RowHeader" v-slot="cell">\{{cell.row.index + 1}}</wj-flex-grid-cell-template>
+            {{#fieldDescriptors}}
+            {{#if (isNotId nameCamelCase)}}
+            {{#if (isPrimitive className)}}
+            {{#if (isStringType (getPrimitiveType className))}}
+            <wj-flex-grid-column binding="{{nameCamelCase}}" header="{{#ifNotNull displayName namePascalCase}}{{/ifNotNull}}" width="2*" :isReadOnly="!editMode" align="center"/>
+            {{else}}
+            <wj-flex-grid-column binding="{{nameCamelCase}}" header="{{#ifNotNull displayName namePascalCase}}{{/ifNotNull}}" width="2*" :isReadOnly="true" align="center">
+                <wj-flex-grid-cell-template cellType="Cell" v-slot="cell">
+                    <{{getPrimitiveType className}} v-model="cell.item.{{nameCamelCase}}" :editMode="editMode"/>
+                </wj-flex-grid-cell-template>
+            </wj-flex-grid-column>
+            {{/if}}
+            {{else}}
+            <wj-flex-grid-column binding="{{nameCamelCase}}.name" header="{{#ifNotNull displayName namePascalCase}}{{/ifNotNull}}" width="2*" :isReadOnly="true" align="center">
+                <wj-flex-grid-cell-template cellType="Cell" v-slot="cell">
+                    <{{namePascalCase}} v-model="cell.item.{{nameCamelCase}}" :editMode="editMode"></{{namePascalCase}}>
+                </wj-flex-grid-cell-template>
+            </wj-flex-grid-column>
+            {{/if}}
+            {{/if}}
+            {{/fieldDescriptors}}
+        </wj-flex-grid>
+    </div>
+</template>
+
+<script>
+import BaseDetailGrid from '../base-ui/BaseDetailGrid';
+
+export default {
+    name: '{{namePascalCase}}DetailGrid',
+    mixins: [BaseDetailGrid],
+    components: {
+    },
+    props: {
+        label: String,
+    },
+    methods: {
+    }
+}
+</script>
+
+
+<function>
+    window.$HandleBars.registerHelper('ifNotNull', function (displayName, name) {
+        if(displayName){
+	        return displayName;
+        }else{
+	        return name;
+        }
+    })
+    window.$HandleBars.registerHelper('isNotName', function (className) {
+        return (className != 'name')
+    })
+    window.$HandleBars.registerHelper('isNotId', function (className) {
+        return (className != 'id')
+    })
+    window.$HandleBars.registerHelper('isStringType', function (type) {
+        return (type === "String");
+    })
+    window.$HandleBars.registerHelper('getPrimitiveType', function (className, options) {
+        if(className.includes("String")) {
+            if(this.isLob) {
+                return "LargeObject";
+            } else {
+                return "String";
+            }
+        } else if(className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float") || className.includes("int")) {
+            if(this.isLob) {
+                return "LargeObject";
+            } else {
+                return "Number";
+            }
+        } else if(className.includes("Boolean")) {
+            return "Boolean";
+        } else if(className.includes("Date")) {
+            return "Date";
+        }
+    })
+
+    window.$HandleBars.registerHelper('isPrimitive', function (className) {
+        if(className.includes("String") || className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float")
+                || className.includes("Boolean") || className.includes("Date")){
+            return true;
+        } else {
+            return false;
+        }
+    })
+</function>

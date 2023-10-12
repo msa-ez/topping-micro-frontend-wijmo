@@ -1,0 +1,60 @@
+fileName: Snackbar.vue
+path: {{nameCamelCase}}/frontend/src/components/ui
+---
+<template>
+    <div>
+        <v-snackbar
+            v-model="snackbar.status"
+            :top="true"
+            :timeout="snackbar.timeout"
+            :color="snackbar.color"
+        >
+            \{{ snackbar.text }}
+            <v-btn dark text @click="snackbar.status = false">
+                Close
+            </v-btn>
+        </v-snackbar>
+    </div>
+</template>
+
+<script>
+
+export default {
+    name: 'Snackbar',
+    components:{
+    },
+    data: () => ({
+        snackbar: {
+            status: false,
+            timeout: 5000,
+            text: '',
+            color: 'info'
+        },
+    }),
+    created() {
+        this.$EventBus.$on('show-error', this.error);
+        this.$EventBus.$on('show-success', this.success);
+    },
+    destroyed() {
+        this.$EventBus.$off('show-error', this.error);
+        this.$EventBus.$off('show-success', this.success);
+    },
+    methods:{
+        error(e){
+            this.snackbar.status = true
+            this.snackbar.color = 'error'
+            if(e.response && e.response.data.message) {
+                this.snackbar.text = e.response.data.message
+            } else {
+                this.snackbar.text = e
+            }
+        },
+        success(msg){
+            this.snackbar.color= 'info'
+            this.snackbar.status = true
+            this.snackbar.text = msg
+
+        }
+    }
+}
+</script>
