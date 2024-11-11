@@ -4,5 +4,13 @@ module.exports = {
       libraryTarget: "system",
       filename: "js/app.js",
     },
+  },
+  
+  transpileDependencies: [
+    'vuetify'
+  ],
+
+  devServer: {
+    disableHostCheck: true
   }
 }

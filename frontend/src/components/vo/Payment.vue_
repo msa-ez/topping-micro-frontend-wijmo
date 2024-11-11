@@ -2,24 +2,24 @@ fileName: Payment.vue
 path: {{nameCamelCase}}/frontend/src/components/vo
 ---
 <template>
-    <div style="margin: 0 -15px 0 -15px;">
-        <v-card-title>
-            \{{label}}
-        </v-card-title>
-        <v-card-text v-if="value">
-            <div v-if="editMode" style="margin-top:-20px;">
-                <v-text-field label="PaymentType" v-model="value.paymentType"/>
-            </div>
-            <div v-else>
-                PaymentType :  \{{value.paymentType }}
-            </div>
-            <div v-if="editMode" style="margin-top:-20px;">
-                <v-text-field type="number" label="Amount" v-model="value.amount"/>
-            </div>
-            <div v-else>
-                Amount :  \{{value.amount }}
-            </div>
-        </v-card-text>
+    <div>
+        <div v-if="editMode" style="margin: 0 -15px 0 -15px;">
+            <v-card-title>
+                \{{label}}
+            </v-card-title>
+            <v-card-text>
+                <div style="margin-top:-20px;">
+                    <v-text-field label="결제 유형" v-model="value.paymentType"/>
+                </div>
+                <div style="margin-top:-20px;">
+                    <v-text-field type="number" label="금액" v-model="value.amount"/>
+                </div>
+            </v-card-text>
+        </div>
+        <div v-else>
+            <div>결제 유형 :  \{{value.paymentType }}</div>
+            <div>금액 :  \{{value.amount }}</div>
+        </div>
     </div>
 </template>
 

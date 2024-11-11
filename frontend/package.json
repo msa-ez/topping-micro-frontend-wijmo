@@ -11,10 +11,8 @@ fileName: package.json
     "serve:standalone": "vue-cli-service serve --mode standalone --port {{#setPortNumber portGenerated}}{{/setPortNumber}}"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.4.4",
     "@grapecity/wijmo.styles": "^5.20222.877",
     "@grapecity/wijmo.vue2.all": "5.20222.877-rc",
-    "@johmun/vue-tags-input": "^2.1.0",
     "apexcharts": "^3.41.1",
     "axios": "^0.26.0",
     "bootstrap": "^5.2.3",
@@ -23,6 +21,14 @@ fileName: package.json
     "jszip": "3.10.1",
     "keycloak-js": "^22.0.1",
     "single-spa-vue": "^2.1.0",
+    "rsocket-core": "0.0.25",
+    "rsocket-flowable": "0.0.25",
+    "rsocket-websocket-client": "0.0.25",
+    "systemjs": "0.19.40",
+    "systemjs-plugin-babel": "0.0.25",
+    "systemjs-plugin-css": "0.1.37",
+    "systemjs-plugin-vue": "1.2.0",
+    "systemjs-vue-browser": "1.0.11",
     "vue": "^2.6.11",
     "vue-router": "^3.4.3",
     "vue2-google-maps": "^0.10.7",
@@ -35,10 +41,13 @@ fileName: package.json
     "@vue/cli-plugin-router": "~4.5.15",
     "@vue/cli-service": "~4.5.15",
     "babel-eslint": "^10.1.0",
+    "babel-loader": "^9.1.2",
+    "browser-sync": "2.27.7",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
+    "lite-server": "2.4.0",
     "sass": "~1.32.0",
-    "sass-loader": "^10.1.0",
+    "sass-loader": "^10.0.0",
     "vue-cli-plugin-single-spa": "^2.0.0",
     "vue-cli-plugin-vuetify": "~2.4.7",
     "vue-loader": "^17.0.1",
@@ -57,9 +66,7 @@ fileName: package.json
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {
-      "no-mixed-spaces-and-tabs": 0
-    }
+    "rules": {}
   },
   "browserslist": [
     "> 1%",

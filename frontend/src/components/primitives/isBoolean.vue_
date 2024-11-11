@@ -11,6 +11,7 @@ path: {{nameCamelCase}}/frontend/src/components/primitives
                 hide-details
                 inset
                 @change="change"
+                label="입력하세요."
             >
             </v-switch>
         </div>

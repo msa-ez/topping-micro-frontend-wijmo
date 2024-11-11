@@ -12,8 +12,7 @@ Vue.prototype.$Vue = Vue;
 Vue.prototype.$EventBus = new Vue();
 
 import singleSpaVue from "single-spa-vue";
-import '@babel/polyfill';
-
+ 
 const axios = require("axios").default;
 require('./style.css');
 
@@ -53,13 +52,13 @@ templateFiles.keys().forEach(function(tempFiles) {
 Vue.use(Managing);
 const pluralCaseList = []
 
-{{#aggregates}}
+    {{#aggregates}}
 pluralCaseList.push( {plural: "{{namePlural}}", pascal: "{{namePascalCase}}"} )
-{{/aggregates}}
+    {{/aggregates}}
 
-{{#views}}
+    {{#views}}
 pluralCaseList.push( {plural: "{{namePlural}}", pascal: "{{namePascalCase}}"} )
-{{/views}}
+    {{/views}}
 
 Vue.prototype.$ManagerLists.forEach(function(item, idx) {
   pluralCaseList.forEach(function(tmp) {
@@ -93,11 +92,11 @@ function init() {
   }).then(auth => {
     const ONE_MINUTE = 60000;
   
-    if (!auth) {
-      window.location.reload();
-    } else {
-      console.info(`Auth ok`);
-    }
+      if (!auth) {
+        window.location.reload();
+      } else {
+        console.info(`Auth ok`);
+      }
 
     Vue.prototype.$OAuth = keycloak
 
@@ -115,11 +114,11 @@ if (useKeycloak) {
     Vue,
     appOptions: {
       vuetify: vuetify,
-      router,
-      render: h => h(App, {
-        props: {
-          OAuth: keycloak,
-        },
+        router,
+        render: h => h(App, {
+          props: {
+            OAuth: keycloak,
+          },
       }),
     }
   });

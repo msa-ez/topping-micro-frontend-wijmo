@@ -6,7 +6,7 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components/ui
     <div>
         <div class="label-title">\{{label}}</div>
         <v-btn v-if="editMode" @click="append()">추가</v-btn>
-        <v-btn v-if="editMode" @click="detailDeleteRow()">삭제</v-btn>
+        <v-btn v-if="editMode" @click="deleteDetailRow()">삭제</v-btn>
         <wj-flex-grid
             ref="flexGridDetails"
             :key="value.length"

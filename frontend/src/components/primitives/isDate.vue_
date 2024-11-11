@@ -4,7 +4,6 @@ path: {{nameCamelCase}}/frontend/src/components/primitives
 <template>
     <div>
         <div v-if="editMode">
-            <div class="label-title">\{{label}}</div>
             <v-menu
                 ref="menu"
                 v-model="menu"
@@ -18,6 +17,7 @@ path: {{nameCamelCase}}/frontend/src/components/primitives
                     <v-text-field
                         v-bind="attrs"
                         v-model="date"
+                        :label="label"
                         prepend-icon="mdi-calendar"
                         readonly
                         v-on="on"
@@ -29,10 +29,10 @@ path: {{nameCamelCase}}/frontend/src/components/primitives
                         scrollable
                 >
                     <v-spacer></v-spacer>
-                    <v-btn text color="primary" @click="menu = false">
-                        Cancel
+                    <v-btn text color="primary" @click="resetDate()">
+                        Reset
                     </v-btn>
-                    <v-btn text color="primary" @click="$refs.menu.save(date)">
+                    <v-btn text color="primary" @click="setDate(date)">
                         OK
                     </v-btn>
                 </v-date-picker>
@@ -52,7 +52,6 @@ path: {{nameCamelCase}}/frontend/src/components/primitives
         props: {
             value: Object,
             editMode: Boolean,
-            label: String,
         },
         data: () => ({
             menu: false,
@@ -60,8 +59,16 @@ path: {{nameCamelCase}}/frontend/src/components/primitives
         }),
         created() {
             if(!this.value) {
+                this.date = null;
                 this.value = this.date;
             }
+        },
+        mounted() {
+            this.$EventBus.$on('changeSelected', (dialog) => {
+                if (!dialog) {
+                    this.date = null;
+                }
+            });
         },
         watch: {
             value() {
@@ -71,6 +78,15 @@ path: {{nameCamelCase}}/frontend/src/components/primitives
         methods:{
             change(){
                 this.$emit("input", this.value);
+            },
+            resetDate(){
+                this.date = null;
+                this.value = this.date
+                this.setDate(this.value)
+            },
+            setDate(date){
+                this.$refs.menu.save(date)
+                this.$emit("input", date);
             }
         }
     }

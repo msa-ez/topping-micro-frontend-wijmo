@@ -33,6 +33,15 @@ path: {{nameCamelCase}}/frontend/src/components/base-ui
 
             this.repository = new BaseRepository(axios, this.path)
         },
+        watch:{
+            openDialog:{
+                handler: function(newVal){
+                    if(!newVal){
+                        this.newValue = {};
+                    }
+                }
+            }
+        },
         methods:{
             selectFile(){
                 if(this.editMode == false) {
@@ -111,6 +120,7 @@ path: {{nameCamelCase}}/frontend/src/components/base-ui
             closeDialog(){
                 this.openDialog = false
                 this.editMode = false
+                this.$EventBus.$emit('changeSelected', this.openDialog)
             },
 
         },

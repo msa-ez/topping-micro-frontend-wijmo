@@ -190,8 +190,31 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
     {{/if}}{{/each}}
     {{/referenceClass}}
 
+    {{#fieldDescriptors}}
+    {{#if (isNotId nameCamelCase)}}
+    {{#if (isPrimitive className)}}
+    {{else}}
+    {{#checkVO className}}
+    import {{className}} from './vo/{{className}}.vue';
+    {{/checkVO}}
+    {{/if}}
+    {{/if}}
+    {{/fieldDescriptors}}
+
     export default {
         name: '{{namePascalCase}}',
+        components:{
+        {{#fieldDescriptors}}
+            {{#if (isNotId nameCamelCase)}}
+            {{#if (isPrimitive className)}}
+            {{else}}
+            {{#checkVO className}}
+            {{className}},
+            {{/checkVO}}
+            {{/if}}
+            {{/if}}
+        {{/fieldDescriptors}}
+        },
         props: {
             value: [Object, String, Number, Boolean, Array],
             editMode: Boolean,
@@ -444,7 +467,7 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
             } else {
                 return "String";
             }
-        } else if(className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float")) {
+        } else if(className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float") || className.includes("int")) {
             if(this.isLob) {
                 return "LargeObject";
             } else {
@@ -459,7 +482,14 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
 
     window.$HandleBars.registerHelper('checkVO', function (className, options) {
         if(className.endsWith("Address") || className.endsWith("Photo") || className.endsWith("User") || className.endsWith("Email") 
-                || className.endsWith("Payment") || className.endsWith("Money")){
+                || className.endsWith("Payment") || className.endsWith("Money") || className.endsWith("Weather") || className.endsWith("Rating") ){
+            return options.fn(this);
+        }
+    })
+
+    window.$HandleBars.registerHelper('checkEntityMember', function (className, options) {
+        if(!(className.endsWith("Address") || className.endsWith("Photo") || className.endsWith("User") || className.endsWith("Email") 
+                || className.endsWith("Payment") || className.endsWith("Money") || className.endsWith("Weather") || className.endsWith("Rating")) && className.indexOf("java.") == -1 && className.indexOf("List") == -1){
             return options.fn(this);
         } else {
             return options.inverse(this);

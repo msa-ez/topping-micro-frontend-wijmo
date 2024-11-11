@@ -3,7 +3,6 @@ path: {{nameCamelCase}}/frontend/src/components/base-ui
 ---
 <template>
     <div>
-        <v-text-field :label="label" v-model="searchKeyword"></v-text-field>
         <v-combobox
             :items="list"
             :item-text="nameField"
@@ -60,6 +59,13 @@ export default {
         if(this.editMode){
             this.fillSelections()
         }
+    },
+    mounted() {
+        this.$EventBus.$on('changeSelected', (dialog) => {
+            if (!dialog) {
+                this.selected = null;
+            }
+        });
     },
     watch:{
         "selected": {
