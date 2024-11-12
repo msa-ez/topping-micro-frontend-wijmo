@@ -82,6 +82,7 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components/ui
             <wj-flex-grid-column binding="{{nameCamelCase}}Id" header="{{#ifNotNull displayName namePascalCase}}{{/ifNotNull}}" width="2*" :isReadOnly="true" align="center">
                 <wj-flex-grid-cell-template cellType="Cell" v-slot="cell">   
                     <{{namePascalCase}}Id v-model="cell.item.{{nameCamelCase}}Id" :editMode="editMode"></{{namePascalCase}}Id>
+                    \{{ cell.item.{{#getNameField aggregateRoot.fieldDescriptors}}{{/getNameField}} }}
                 </wj-flex-grid-cell-template>
             </wj-flex-grid-column>
             {{/target}}
@@ -168,31 +169,21 @@ export default {
         {{/commands}}
     }),
     watch: {
-        newValue: {
-            deep:true,
-            handler:function(){
-                if(!this.newValue){
-                    this.newValue = {
-                    {{#aggregateRoot.fieldDescriptors}}
-                    {{#if (isNotId nameCamelCase)}}
-                        '{{nameCamelCase}}': {{#setDefaultValue className isVO}}{{/setDefaultValue}},
-                    {{/if}}
-                    {{/aggregateRoot.fieldDescriptors}}
-                    }
-                }
-            }
-        }
     },
     methods:{
         {{#commands}}
         {{^isRestRepository}}
         {{nameCamelCase}}({{#if fieldDescriptors}}params{{/if}}){
             try{
-                this.repository.invoke(this.getSelectedItem(), "{{nameCamelCase}}", {{#if fieldDescriptors}}params{{else}}null{{/if}})
+                this.repository.invoke(this.getSelectedItem(), "{{controllerInfo.apiPath}}", {{#if fieldDescriptors}}params{{else}}null{{/if}})
                 this.$EventBus.$emit('show-success','{{#ifNotNull displayname name}}{{/ifNotNull}} 성공적으로 처리되었습니다.')
+                {{#if fieldDescriptors}}
+                this.{{nameCamelCase}}Dialog = false
+                {{/if}}
             }catch(e){
                 this.$EventBus.$emit('show-error', e);
             }
+            
         },
         {{/isRestRepository}}
         {{/commands}}
@@ -240,9 +231,18 @@ window.$HandleBars.registerHelper('getPickerName', function (fieldDescriptors) {
         }
     }
 })
+window.$HandleBars.registerHelper('getNameField', function (fieldDescriptors) {
+    for(var i = 0; i < fieldDescriptors.length; i ++ ){
+        if(fieldDescriptors[i] && fieldDescriptors[i].isName == true){
+            return fieldDescriptors[i].nameCamelCase
+        }else if(fieldDescriptors[i].isName == false && fieldDescriptors[i].isKey == false){
+            return fieldDescriptors[i].nameCamelCase
+        }
+    }
+});
 window.$HandleBars.registerHelper('checkVO', function (className, options) {
     if(className.endsWith("Address") || className.endsWith("Photo") || className.endsWith("User") || className.endsWith("Email") 
-            || className.endsWith("Payment") || className.endsWith("Money") || className.endsWith("Weather") || className.endsWith("Rating") ){
+            || className.endsWith("Payment") || className.endsWith("Money") || className.endsWith("Weather") || className.endsWith("Rating") || className.endsWith("Id") ){
         return options.fn(this);
     }
 })

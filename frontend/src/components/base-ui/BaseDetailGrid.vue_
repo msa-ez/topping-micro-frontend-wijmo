@@ -18,7 +18,15 @@ path: {{nameCamelCase}}/frontend/src/components/base-ui
              }
          },
          methods: {
-            detailDeleteRow() {
+            addDetailRow() {
+                if (!this.value) {
+                    this.value = [];
+                }
+                const newDetailRow = {}
+                this.value.push(newDetailRow);
+                this.$emit('input', this.value);
+            },
+            deleteDetailRow() {
                 const flexGridDetails = this.$refs.flexGridDetails;
                 const view = flexGridDetails.collectionView;
                 const selectedIndex = view.currentPosition;

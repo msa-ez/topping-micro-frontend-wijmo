@@ -5,14 +5,13 @@ path: {{nameCamelCase}}/frontend/src/components/primitives
     <div>
         <div v-if="editMode">
             <div class="label-title">\{{label}}</div>
-            <v-textarea
+            <v-text-field 
                 v-bind="$attrs"
                 v-model="value"
-                @input="change" 
+                @change="change"
                 label="입력하세요."
-                auto-grow
-                rows="1"
-                solo
+                outlined
+                single-line
             />
         </div>
         <div v-else>

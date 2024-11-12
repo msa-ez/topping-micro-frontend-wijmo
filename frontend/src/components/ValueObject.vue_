@@ -1,11 +1,12 @@
 forEach: ValueObject
 fileName: {{namePascalCase}}.vue
 path: {{boundedContext.nameCamelCase}}/frontend/src/components
+except: {{#checkDefaultVO namePascalCase}}{{/checkDefaultVO}}
 ---
 <template>
     {{#referenceClass}}
     <div>
-        <BasePicker v-if="editMode" searchApiPath="{{#toURL ../referenceClass}}{{/toURL}}{{#../boundedContext.aggregates}}{{#outgoingRelations}}{{#target}}{{#attached 'View' this}}/search/findBy{{namePascalCase}}{{/attached}}{{/target}}{{/outgoingRelations}}{{/../boundedContext.aggregates}}" searchParameterName="{{#../boundedContext.aggregates}}{{#outgoingRelations}}{{#target}}{{#attached 'BoundedContext' this}}{{#aggregates}}{{#if (compareName name ../../../../../../referenceClass)}}{{#getNameField aggregateRoot.fieldDescriptors}}{{/getNameField}}{{/if}}{{/aggregates}}{{/attached}}{{/target}}{{/outgoingRelations}}{{/../boundedContext.aggregates}}"  idField="{{#../boundedContext.aggregates}}{{#outgoingRelations}}{{#target}}{{#attached 'BoundedContext' this}}{{#aggregates}}{{#if (compareName name ../../../../../../referenceClass)}}{{#getKey aggregateRoot.fieldDescriptors}}{{/getKey}}{{/if}}{{/aggregates}}{{/attached}}{{/target}}{{/outgoingRelations}}{{/../boundedContext.aggregates}}" nameField="{{#../boundedContext.aggregates}}{{#outgoingRelations}}{{#target}}{{#attached 'BoundedContext' this}}{{#aggregates}}{{#if (compareName name ../../../../../../referenceClass)}}{{#getNameField aggregateRoot.fieldDescriptors}}{{/getNameField}}{{/if}}{{/aggregates}}{{/attached}}{{/target}}{{/outgoingRelations}}{{/../boundedContext.aggregates}}" path="{{#toURL ../referenceClass}}{{/toURL}}" label="{{#ifNotNull displayName ../namePascalCase}}{{/ifNotNull}}" v-model="value" @selected="pick" :editMode="editMode" />
+        <BasePicker v-if="editMode" searchApiPath="{{#toURL ../referenceClass}}{{/toURL}}{{#../boundedContext.aggregates}}{{#outgoingRelations}}{{#target}}{{#attached 'View' this}}/search/findBy{{namePascalCase}}{{/attached}}{{/target}}{{/outgoingRelations}}{{/../boundedContext.aggregates}}" searchParameterName="{{#../boundedContext.aggregates}}{{#outgoingRelations}}{{#target}}{{#attached 'BoundedContext' this}}{{#aggregates}}{{#if (compareName name ../../../../../../referenceClass)}}{{#getNameField aggregateRoot.fieldDescriptors}}{{/getNameField}}{{/if}}{{/aggregates}}{{/attached}}{{/target}}{{/outgoingRelations}}{{/../boundedContext.aggregates}}"  idField="{{#../boundedContext.aggregates}}{{#if outgoingRelations}}{{#outgoingRelations}}{{#target}}{{#attached 'BoundedContext' this}}{{#aggregates}}{{#if (compareName name ../../../../../../referenceClass)}}{{#getKey aggregateRoot.fieldDescriptors}}{{/getKey}}{{/if}}{{/aggregates}}{{/attached}}{{/target}}{{/outgoingRelations}}{{else}}id{{/if}}{{/../boundedContext.aggregates}}" {{#../boundedContext.aggregates}}{{#if outgoingRelations}}nameField="{{#outgoingRelations}}{{#target}}{{#attached 'BoundedContext' this}}{{#aggregates}}{{#if (compareName name ../../../../../../referenceClass)}}{{#getNameField aggregateRoot.fieldDescriptors}}{{/getNameField}}{{/if}}{{/aggregates}}{{/attached}}{{/target}}{{/outgoingRelations}}"{{else}}:nameField="nameField"{{/if}}{{/../boundedContext.aggregates}} path="{{#toURL ../referenceClass}}{{/toURL}}" label="{{#ifNotNull displayName ../namePascalCase}}{{/ifNotNull}}" v-model="value" @selected="pick" :editMode="editMode" />
         <div v-else style="height:100%">
             <span>\{{ value && value.name ? value.name : '' }}</span>
         </div>
@@ -42,121 +43,104 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
 </template>
 
 <script>
-    import BaseEntity from './base-ui/BaseEntity'
+import BaseEntity from './base-ui/BaseEntity'
 
-    export default {
-        name: '{{namePascalCase}}',
-        mixins:[BaseEntity],
-        components:{
+export default {
+    name: '{{namePascalCase}}',
+    mixins:[BaseEntity],
+    components:{
+    },
+    data: () => ({
+        path: '{{#if referenceClass}}{{#toURL referenceClass}}{{/toURL}}{{else}}{{namePlural}}{{/if}}',
+    }),
+    props: {
+    },
+    
+    watch: {
+        value(val){
+            this.value = val;
+            this.change();
         },
-        data: () => ({
-            path: '{{#if referenceClass}}{{#toURL referenceClass}}{{/toURL}}{{else}}{{namePlural}}{{/if}}',
-        }),
-        props: {
-        },
-        watch: {
-            value(val){
-                this.value = val;
-                this.change();
-            },
-        },
-        async created(){
-            if (this.value && this.value.id !== undefined) {
-                this.value = await this.repository.findById(this.value.id)
+    },
+    computed:{
+        nameField(){
+            var name = '';
+            if(Object.keys(this.value).length < 3){
+                name = "id"
+            }else{
+                const excludedKeys = ['_links','index'];
+                const filteredKeys = Object.keys(this.value).filter(key => {
+                    const valueType = typeof this.value[key];
+                    return !excludedKeys.includes(key) && key !== 'id' && valueType !== 'object' && valueType !== 'number';
+                });
+                if(filteredKeys == []){
+                    name = "id"
+                }else{
+                    name = filteredKeys[1]; 
+                }
             }
-        },
-        methods: {
-            pick(val){
-                this.value = val;
-                this.change();
-            },
+            return name
         }
+    },
+    async created(){
+        if (this.value && this.value.id !== undefined) {
+            this.value = await this.repository.findById(this.value.id)
+        }
+    },
+    methods: {
+        pick(val){
+            this.value = val;
+            this.change();
+        },
     }
+}
 </script>
 
 
 <function>
-    window.$HandleBars.registerHelper('print', function (value) {
-        console.log(value)
-    });
-
-    window.$HandleBars.registerHelper('isNotId', function (className) {
-        return (className != 'id')
+    var me = this;
+    me.contexts.views = [];
+    if(this.boundedContext.readModels)
+    this.boundedContext.readModels.forEach(view=>{
+        if(view.aggregate == me && view.dataProjection=="query-for-aggregate"){
+            me.contexts.views.push(view);
+        }
     })
-
-    window.$HandleBars.registerHelper('isPrimitive', function (className) {
-        if(className.includes("String") || className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float")
-                || className.includes("Boolean") || className.includes("Date")){
+    window.$HandleBars.registerHelper('compareName', function (aggName, referenceName) {
+        if(aggName == referenceName){
             return true;
-        } else {
+        }else{
             return false;
         }
-    })
-
-    window.$HandleBars.registerHelper('getPrimitiveType', function (className, options) {
-        if(className.includes("String")) {
-            if(this.isLob) {
-                return "LargeObject";
-            } else {
-                return "String";
+    });
+    window.$HandleBars.registerHelper('getAggName', function (aggName, referenceName) {
+        let filterAggName = String(aggName.replace("Query", ""));
+        if(filterAggName == referenceName){
+            return aggName
+        }
+    });
+    window.$HandleBars.registerHelper('compareName', function (aggName, referenceName) {
+        if(aggName == referenceName){
+            return true
+        }
+    });
+    window.$HandleBars.registerHelper('getKey', function (fieldDescriptors) {
+        for(var i = 0; i < fieldDescriptors.length; i ++ ){
+            if(fieldDescriptors[i] && fieldDescriptors[i].isKey == true){
+                return fieldDescriptors[i].name
             }
-        } else if(className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float")) {
-            if(this.isLob) {
-                return "LargeObject";
-            } else {
-                return "Number";
+        }
+    });
+    window.$HandleBars.registerHelper('getNameField', function (fieldDescriptors) {
+        for(var i = 0; i < fieldDescriptors.length; i ++ ){
+            if(fieldDescriptors[i] && fieldDescriptors[i].isName == true){
+                return fieldDescriptors[i].nameCamelCase
+            }else if(fieldDescriptors[i].isName == false && fieldDescriptors[i].isKey == false){
+                return fieldDescriptors[i].nameCamelCase
             }
-        } else if(className.includes("Boolean")) {
-            return "Boolean";
-        } else if(className.includes("Date")) {
-            return "Date";
         }
-    })
-
-    window.$HandleBars.registerHelper('checkVO', function (className, options) {
-        if(className.endsWith("Address") || className.endsWith("Photo") || className.endsWith("User") || className.endsWith("Email") 
-                || className.endsWith("Payment") || className.endsWith("Money")){
-            return options.fn(this);
-        } else {
-            return options.inverse(this);
-        }
-    })
-
-    window.$HandleBars.registerHelper('checkListOfEntityMember', function (className, options) {
-        if(className.indexOf("List") == 0) {
-            return options.fn(this);
-        } else {
-            return options.inverse(this);
-        }
-    })
-
-    window.$HandleBars.registerHelper('getEntityClassNameOfList', function (listClassName) {
-        var regex = /\<(.*?)\>/g;
-        var match = regex.exec(listClassName);
-        if (match) {
-            return (match[1]);
-        }
-        return "NO-CLASS";
-    })
-
-    window.$HandleBars.registerHelper('setDefaultValue', function (className) {
-        var date = (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10);
-        if(className.endsWith("String")) {
-            return "''";
-        } else if(className.endsWith("Integer") || className.endsWith("Long") || className.endsWith("Double") || className.endsWith("Float")) {
-            return 0;
-        } else if(className.endsWith("Boolean")) {
-            return false;
-        } else if(className.endsWith("Date")) {
-            return "'" + date + "'";
-        } else if(className.includes("List")) {
-            return "[]"
-        } else {
-            return "{}"
-        }
-    })
-
-     window.$HandleBars.registerHelper('toURL', function (className) {
+    });
+    window.$HandleBars.registerHelper('toURL', function (className) {
 
         var pluralize = function(value, revert){
 
@@ -271,5 +255,104 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
         }
         return pluralize(className.toLowerCase())
     })
+    window.$HandleBars.registerHelper('ifNotNull', function (displayName, name) {
+        if(displayName){
+	        return displayName;
+        }else{
+	        return name;
+        }
+    })
+    window.$HandleBars.registerHelper('print', function (value) {
+        console.log(value)
+    });
+
+    window.$HandleBars.registerHelper('isNotId', function (className) {
+        return (className != 'id')
+    })
+
+    window.$HandleBars.registerHelper('isPrimitive', function (className) {
+        if(className.includes("String") || className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float")
+                || className.includes("Boolean") || className.includes("Date")){
+            return true;
+        } else {
+            return false;
+        }
+    })
+
+    window.$HandleBars.registerHelper('getPrimitiveType', function (className, options) {
+        if(className.includes("String")) {
+            if(this.isLob) {
+                return "LargeObject";
+            } else {
+                return "String";
+            }
+        } else if(className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float") || className.includes("int")) {
+            if(this.isLob) {
+                return "LargeObject";
+            } else {
+                return "Number";
+            }
+        } else if(className.includes("Boolean")) {
+            return "Boolean";
+        } else if(className.includes("Date")) {
+            return "Date";
+        }
+    })
+
+    window.$HandleBars.registerHelper('checkEntityMember', function (className, options) {
+        if(!(className.endsWith("Address") || className.endsWith("Photo") || className.endsWith("User") || className.endsWith("Email") 
+                || className.endsWith("Payment") || className.endsWith("Money") || className.endsWith("Weather") || className.endsWith("Rating")) && className.indexOf("java.") == -1 && className.indexOf("List") == -1){
+            return options.fn(this);
+        } else {
+            return options.inverse(this);
+        }
+    })
+
+    window.$HandleBars.registerHelper('checkListOfEntityMember', function (className, options) {
+        if(className.indexOf("List") == 0) {
+            return options.fn(this);
+        } else {
+            return options.inverse(this);
+        }
+    })
+
+    window.$HandleBars.registerHelper('getEntityClassNameOfList', function (listClassName) {
+        var regex = /\<(.*?)\>/g;
+        var match = regex.exec(listClassName);
+        if (match) {
+            return (match[1]);
+        }
+        return "NO-CLASS";
+    })
+
+    window.$HandleBars.registerHelper('setDefaultValue', function (className) {
+        var date = (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10);
+        if(className.endsWith("String")) {
+            return "''";
+        } else if(className.endsWith("Integer") || className.endsWith("Long") || className.endsWith("Double") || className.endsWith("Float")) {
+            return 0;
+        } else if(className.endsWith("Boolean")) {
+            return false;
+        } else if(className.endsWith("Date")) {
+            return "'" + date + "'";
+        } else if(className.includes("List")) {
+            return "[]"
+        } else {
+            return "{}"
+        }
+    })
+    window.$HandleBars.registerHelper('check', function (file) {
+       if(file)return file
+    })
+    
+    window.$HandleBars.registerHelper('checkDefaultVO', function (parameterName) { 
+        var voName = ['Address', 'Email', 'EventViewer', 'File', 'Money', 'Payment', 'Photo', 'Rating', 'User', 'Weather'];
+        if (voName.some(item => parameterName === item)) { 
+            return true;
+        } else {
+            return false;
+        }
+    });
+
 
 </function>

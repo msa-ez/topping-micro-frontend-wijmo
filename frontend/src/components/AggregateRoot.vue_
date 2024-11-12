@@ -51,37 +51,44 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
     </div>
 </template>
 
-<script>
-    import BaseEntity from './base-ui/BaseEntity'
 
-    export default {
-        name: '{{namePascalCase}}',
-        mixins:[BaseEntity],
-        components:{
-        },
-        
-        data: () => ({
-            path: "{{namePlural}}"
-        }),
-        created(){
-        },
-        computed:{
-        },
-        methods: {
-        },
-    }
+<script>
+
+import BaseEntity from './base-ui/BaseEntity'
+
+export default {
+    name: '{{namePascalCase}}',
+    mixins:[BaseEntity],
+    components:{
+    },
+    
+    data: () => ({
+        path: "{{namePlural}}"
+    }),
+    created(){
+    },
+    computed:{
+    },
+    methods: {
+    },
+}
 </script>
 
 
 <function>
+    window.$HandleBars.registerHelper('getEntityFromList', function (className) {
+        if(className.includes("List<") && className.includes(">")) {
+            return className.replace("List<", "").replace(">", "");
+        }
+        return className;
+    })
     window.$HandleBars.registerHelper('ifNotNull', function (displayName, name) {
         if(displayName){
-	    return displayName;
+	        return displayName;
         }else{
-	    return name;
+	        return name;
         }
     })
-
     window.$HandleBars.registerHelper('checkCommandPut', function (info, options) {
         if(info.endsWith('PUT')){
             return options.fn(this);
@@ -126,7 +133,7 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
             } else {
                 return "String";
             }
-        } else if(className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float")) {
+        } else if(className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float") || className.includes("int")) {
             if(this.isLob) {
                 return "LargeObject";
             } else {
@@ -139,9 +146,9 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
         }
     })
 
-    window.$HandleBars.registerHelper('checkVO', function (className, options) {
-        if(className.endsWith("Address") || className.endsWith("Photo") || className.endsWith("User") || className.endsWith("Email") 
-                || className.endsWith("Payment") || className.endsWith("Money")){
+    window.$HandleBars.registerHelper('checkEntityMember', function (className, options) {
+        if(!(className.endsWith("Address") || className.endsWith("Photo") || className.endsWith("User") || className.endsWith("Email") 
+                || className.endsWith("Payment") || className.endsWith("Money") || className.endsWith("Weather") || className.endsWith("Rating")) && className.indexOf("java.")==-1 && className.indexOf("List")==-1) {
             return options.fn(this);
         } else {
             return options.inverse(this);
@@ -188,9 +195,24 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
         }
     })
 
+    window.$HandleBars.registerHelper('isSelectedSecurity', function (selectedSecurity) {
+        try{
+            if(!selectedSecurity)
+                return false;
+
+            if(selectedSecurity == 'isKeycloakSecurity'){
+                return true;
+            }
+
+            return;
+        } catch(e){
+            console.log(e)
+        }
+    });
+
     window.$HandleBars.registerHelper('hasRestRepository', function (commands) {
-		try{
-			if(commands == "undefined") {
+        try{
+            if(commands == "undefined") {
                 return options.fn(this);
             }
             var hasRestRepository = false;
@@ -202,23 +224,7 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
                 }
             }
 
-			return hasRestRepository;
-		} catch(e){
-		    console.log(e)
-		}
-  	});
-
-    window.$HandleBars.registerHelper('isSelectedSecurity', function (toppingPlatforms) {
-	var selectedSecurity = false;
-        try{
-            for(var i=0; i<toppingPlatforms.length; i++){
-                if(toppingPlatforms[i] == "keycloak-security" || toppingPlatforms[i] == "spring-security"){
-                    selectedSecurity = true;
-                }
-            }
-
-	    return selectedSecurity;
-	
+            return hasRestRepository;
         } catch(e){
             console.log(e)
         }
@@ -377,3 +383,4 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
     })
 
 </function>
+

@@ -3,6 +3,7 @@ fileName: {{namePascalCase}}Command.vue
 path: {{boundedContext.nameCamelCase}}/frontend/src/components
 ---
 <template>
+
     <v-card outlined>
         <v-card-title>
             {{namePascalCase}}
@@ -49,6 +50,7 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
 </template>
 
 <script>
+   
     export default {
         name: '{{namePascalCase}}Command',
         components:{},
@@ -132,7 +134,7 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
     window.$HandleBars.registerHelper('getPrimitiveType', function (className) {
         if(className.includes("String")) {
             return "String";
-        } else if(className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float")) {
+        } else if(className.includes("Integer") || className.includes("Long") || className.includes("Double") || className.includes("Float") || className.includes("int")) {
             return "Number";
         } else if(className.includes("Boolean")) {
             return "Boolean";
@@ -143,7 +145,14 @@ path: {{boundedContext.nameCamelCase}}/frontend/src/components
 
     window.$HandleBars.registerHelper('checkVO', function (className, options) {
         if(className.endsWith("Address") || className.endsWith("Photo") || className.endsWith("User") || className.endsWith("Email") 
-                || className.endsWith("Payment") || className.endsWith("Money")){
+                || className.endsWith("Payment") || className.endsWith("Money") || className.endsWith("Weather") || className.endsWith("Rating") ){
+            return options.fn(this);
+        }
+    })
+
+    window.$HandleBars.registerHelper('checkEntityMember', function (className, options) {
+        if(!(className.endsWith("Address") || className.endsWith("Photo") || className.endsWith("User") || className.endsWith("Email") 
+                || className.endsWith("Payment") || className.endsWith("Money") || className.endsWith("Weather") || className.endsWith("Rating")) && className.indexOf("java.") == -1 && className.indexOf("List") == -1){
             return options.fn(this);
         } else {
             return options.inverse(this);

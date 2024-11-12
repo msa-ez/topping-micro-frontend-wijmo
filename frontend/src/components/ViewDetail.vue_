@@ -36,31 +36,31 @@ except: {{contexts.isNotCQRS}}
 </template>
 
 <script>
-    const axios = require('axios').default;
+  const axios = require('axios').default;
 
-    export default {
-        name: '{{namePascalCase}}ViewDetail',
-        props: {
-        value: Object,
-        },
-        data: () => ({
-            item : [],
-        }),
-        async created() {
-            var params = this.$route.params;
-            var temp = await axios.get(axios.fixUrl('/{{namePlural}}/' + params.id))
+  export default {
+    name: '{{namePascalCase}}ViewDetail',
+    props: {
+      value: Object,
+    },
+    data: () => ({
+        item : [],
+    }),
+    async created() {
+      var params = this.$route.params;
+      var temp = await axios.get(axios.fixUrl('/{{namePlural}}/' + params.id))
 
-            this.item = temp.data;
+      this.item = temp.data;
 
-        },
-        methods: {
-        }
+    },
+    methods: {
     }
+  }
 </script>
 
 
 <function>
-    this.contexts.isNotCQRS = this.dataProjection!="cqrs"
+     this.contexts.isNotCQRS = this.dataProjection!="cqrs"
 
     window.$HandleBars.registerHelper('isNotId', function (className) {
         return (className != 'id')
@@ -91,8 +91,6 @@ except: {{contexts.isNotCQRS}}
         if(className.endsWith("Address") || className.endsWith("Photo") || className.endsWith("User") || className.endsWith("Email") 
                 || className.endsWith("Payment") || className.endsWith("Money")){
             return options.fn(this);
-        } else {
-            return options.inverse(this);
         }
     })
 

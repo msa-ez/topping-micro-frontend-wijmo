@@ -8,6 +8,7 @@ path: {{nameCamelCase}}/frontend/src/components/primitives
             <v-text-field
                 v-bind="$attrs"
                 type="number"
+                label="숫자를 입력하세요."
                 v-model="value"
                 @change="change"
             />
