@@ -13,49 +13,142 @@
 #### Better User Experience: By loading only the required modules, initial load times can be reduced, which improves the user experience. Additionally, SingleSPA enables partial updates, allowing for a smoother experience by providing new functionality without reloading the entire page.
 
 ### Project Structure
+```
+├── microfrontend-root (Root Application)
+├── microfrontend-home (Navigation Application)
+├── microfrontend-1 
+│ └── frontend (Microfrontend Application)
+├── microfrontend-2 
+│ └── frontend (Microfrontend Application)
+```
+### microfrontend-root
+#### This is the root application that manages all micro frontend applications. It configures Single-SPA and determines which micro frontend application to activate based on the URL path.
 
-- **microfrontend-root**
-##### ![image](https://github.com/user-attachments/assets/dadbfb57-03a1-4e39-aa0c-4cf9a63d959f)
-Root Application. This is the top-level application responsible for configuring SingleSPA and managing the routing across the entire application. It controls the loading of sub-applications and provides functionality for page transitions or module loading as needed.
-- indes.ejs
+- microfrontend-root/src/index.ejs
+
+It serves as a template to manage the load and settings of each module.
+``` 
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- existing code -->
+    <script type="systemjs-importmap">
+      {
+        "imports": {
+          "@my-app/home": "//localhost:9090/js/app.js", // Navigation Application Module
+          "@my-app/microfrontend-1": "//localhost:9002/js/app.js", // Microfrontend Application Module
+          "@my-app/microfrontend-2": "//localhost:9003/js/app.js", // Microfrontend Application Module
+          <!-- add more micro frontend modules here -->
+          <!-- "@my-app/microfrontend3": "//localhost:9004/js/app.js", -->
+          "@my-app/root-config": "/root-config.js" // Root Configuration
+        }
+      }
+    </script>
+    <!-- existing code -->
+  </head>
+<body>
+  <script>
+    System.import('@my-app/root-config'); // Load the root configuration
+  </script>
+  <import-map-overrides-full show-when-local-storage="devtools" dev-libs></import-map-overrides-full>
+</body>
+</html>
 ```
-<script type="systemjs-importmap">
-  {
-    "imports": {
-      "@my-app/home": "//localhost:9090/js/app.js",
-      "@my-app/sub-1": "//localhost:9001/js/app.js",
-      "@my-app/sub-2": "//localhost:9002/js/app.js",
-      "@my-app/root-config": "/root-config.js"
-    }
-  }
-</script>
+- microfrontend-root/src/root-config.js
+
+Manage the overall structure of the application by defining the path and activation conditions of each micro frontend.
 ```
-- root-config.js
-```
+import { registerApplication, start } from 'single-spa';
+import {
+  constructApplications,
+  constructRoutes,
+  constructLayoutEngine,
+} from 'single-spa-layout';
+
 const routes = constructRoutes(`
 <single-spa-router mode="hash" base="/">
   <route default>
     <application name="@my-app/home"></application>
   </route>
-  <route path="sub-1">
-    <application name="@my-app/sub-1"></application>
+  <!-- This path attribute specifies the URL path that activates the micro frontend application. 
+    Any URL starting with "/microfrontend-1" will load the microfrontend-1 application. -->
+  <route path="microfrontend-1">
+    <application name="@my-app/microfrontend-1"></application>
   </route>
-  <route path="sub-2">
-    <application name="@my-app/sub-2"></application>
+  <route path="microfrontend-2">
+    <application name="@my-app/microfrontend-2"></application>
   </route>
+  <!-- add more micro frontend modules here -->
+  <!-- <route path="microfrontend-3">
+    <application name="@my-app/microfrontend-3"></application>
+  </route> -->
 </single-spa-router>
 `);
+
+const applications = constructApplications({
+  routes,
+  loadApp({ name }) {
+    return System.import(name);
+  },
+});
+
+const layoutEngine = constructLayoutEngine({ routes, applications });
+
+applications.forEach(registerApplication);
+layoutEngine.activate();
+start();
 ```
 
-- **microfrontend-home**
-##### ![image](https://github.com/user-attachments/assets/85e6fa1c-8ee4-4ebb-915a-7071120881b8)
-Navigation. This application provides a default navigation menu and main page that link to each sub-application route configured by the root application.
 
-- **frontend**
-##### ![image](https://github.com/user-attachments/assets/f4c50e9b-28c7-4671-a7d9-96ac93dae2e7)
-Frontend of Sub Application. Each application, configured as an independent micro frontend module, manages its own state and view and is loaded independently on specific routes or pages.
+### microfrontend-home
+#### A Vue.js-based micro frontend application that serves as navigation. It is injected into the single-SPA environment through the adapter library, Single-SPA-Vue. And it provides the main page with the basic navigation menu and links to the paths of each micro frontend application configured in the root application.
 
-### How to run
+- microfrontend-home/package.json
+```
+// ... existing code ...
+
+"dependencies": {
+  "single-spa-vue": "^2.1.0", // Single-SPA adapter library
+  "vue": "^2.6.11",
+  "vue-router": "^3.4.3",
+  "vuetify": "^2.6.0"
+},
+
+// ... existing code ...
+```
+- microfrontend-home/src/main.js
+```
+import Vue from 'vue';
+import App from './App.vue';
+import singleSpaVue from "single-spa-vue";
+
+/** ... existing code ... */
+
+let vueLifecycles = singleSpaVue({
+  Vue,
+  appOptions: {
+    vuetify: vuetify,
+    router,
+    render: h => h(App),
+  }
+});
+
+// The 'singleSpaVue' function converts the Vue.js application to a single spa application and stores the result in 'vueLifecycle'.
+
+/** ... existing code ... */
+
+export const bootstrap = vueLifecycles.bootstrap;
+export const mount = vueLifecycles.mount;
+export const unmount = vueLifecycles.unmount;
+
+// The 'bootstrap', 'mount', and 'unmount' methods are exported from 'vueLifecycles' to manage the startup, mounting, and unmount processes of the application in a single-spa architecture.
+```
+
+### microfrontend-1/frontend
+
+#### Independent Micro frontend application. It has its own lifecycle for managing state independently, making it easier to maintain due to its low coupling with other modules. It is registered in the Single-SPA environment through an adapter library like Single-SPA-Vue. For example, [microfrontend-home](#microfrontend-home).
+
+## How to run
 #### 1. Run the Microfrontend Root:
 ```
 cd microfrontend-root
@@ -63,7 +156,7 @@ npm i
 npm run start
 ```
 
-#### 2. Run the Navigation Home:
+#### 2. Run the Navigation:
 ```
 cd microfrontend-home
 npm i
@@ -71,9 +164,9 @@ npm run build
 npm run serve:standalone
 ```
 
-#### 3. Run the Frontend of Sub Application:
+#### 3. Run the Microfrontend Application:
 ```
-cd <sub-application-name>
+cd microfrontend-1/frontend  // enter the micro frontend directory that was created.
 npm i
 npm run serve
 ```
@@ -91,3 +184,58 @@ localStorage.setItem("devtools", true);
 ![image](https://github.com/user-attachments/assets/db16be36-0aa6-4d15-8738-6eecb396324f)
 
 The default URL for "@my-app/home" is "//localhost:9090/js/app.js".
+
+### Example : Fish ERP
+#### EventStorming Model
+![image](https://github.com/user-attachments/assets/aba48b93-a131-455e-9dfd-e9f8bd46e241)
+
+#### Source Tree
+![image](https://github.com/user-attachments/assets/468f4266-9e64-4c49-a271-1c6a486fdd01)
+
+microfrontend-root: Root Configuration <br>
+microfrontend-home: Navigation <br>
+master: Microfrontend Application responsible for registering and managing accounts and items. <br>
+purchase: Microfrontend Application focused on the creation and management of purchases. <br>
+
+```
+// microfrontend-root/src/index.ejs
+
+<!-- existing code -->
+    <script type="systemjs-importmap">
+      {
+        "imports": {
+          "@my-app/home": "//localhost:9090/js/app.js",
+          "@my-app/master": "//localhost:9002/js/app.js",
+          "@my-app/purchase": "//localhost:9003/js/app.js",
+          "@my-app/root-config": "/root-config.js"
+        }
+      }
+    </script>
+<!-- existing code -->
+
+
+// microfrontend-root/src/root-config.js
+
+import { registerApplication, start } from 'single-spa';
+import { constructApplications, constructRoutes, constructLayoutEngine } from 'single-spa-layout';
+
+const routes = constructRoutes(`
+<single-spa-router mode="hash" base="/">
+  <route default>
+    <application name="@my-app/home"></application>
+  </route>
+  <route path="master">
+    <application name="@my-app/master"></application>
+  </route>
+  <route path="purchase">
+    <application name="@my-app/purchase"></application>
+  </route>
+</single-spa-router>
+`);
+
+// ... existing code ...
+
+```
+
+Implemented Screen (url: http://localhost:8080/#/)
+![image](https://github.com/user-attachments/assets/66423840-f7b9-4c51-9974-245a85cc64d2)
